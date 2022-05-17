@@ -4,6 +4,13 @@ import datetime as dt
 class Record:
     def __init__(self, amount, comment, date=''):
         self.amount = amount
+        """
+        Перенос not плохо читается, лучше сделать
+        dt.datetime.now().date() if not date 
+        else dt.datetime.strptime(date, '%d.%m.%Y').date()
+
+        чтобы было сразу было видно условие
+        """
         self.date = (
             dt.datetime.now().date() if
             not
@@ -23,6 +30,9 @@ class Calculator:
         today_stats = 0
         for Record in self.records:
             if Record.date == dt.datetime.now().date():
+                """
+                неконсистентность, в get_week_stats используется +=
+                """
                 today_stats = today_stats + Record.amount
         return today_stats
 
@@ -56,6 +66,10 @@ class CashCalculator(Calculator):
                                 USD_RATE=USD_RATE, EURO_RATE=EURO_RATE):
         currency_type = currency
         cash_remained = self.limit - self.get_today_stats()
+        """
+        Можно ещё добавить в конце else с возвращением ошибки,
+        чтобы учитывать неправильную currency
+        """
         if currency == 'usd':
             cash_remained /= USD_RATE
             currency_type = 'USD'
@@ -63,8 +77,14 @@ class CashCalculator(Calculator):
             cash_remained /= EURO_RATE
             currency_type = 'Euro'
         elif currency_type == 'rub':
+            """
+            cash_remained == 1.00 лишняя операция которая не меняет итоговую сумму
+            """
             cash_remained == 1.00
             currency_type = 'руб'
+        """
+        необязательно использовать elif потому что каждое условие возвращает из функции
+        """
         if cash_remained > 0:
             return (
                 f'На сегодня осталось {round(cash_remained, 2)} '
@@ -73,9 +93,16 @@ class CashCalculator(Calculator):
         elif cash_remained == 0:
             return 'Денег нет, держись'
         elif cash_remained < 0:
+            """
+            Здесь используется функция format, вместо f'', как в остальном коде.
+            Можно написать f'{cash_remained:.2f} чтобы также выводить только 2 числа после запятой
+            """
             return 'Денег нет, держись:' \
                    ' твой долг - {0:.2f} {1}'.format(-cash_remained,
                                                      currency_type)
 
     def get_week_stats(self):
+        """
+        Нужно добавить return в начало, чтобы вернуть значение из Calculator.get_week_stats
+        """
         super().get_week_stats()
